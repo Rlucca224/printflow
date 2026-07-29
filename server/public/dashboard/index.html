@@ -13,6 +13,20 @@
       --bg: #1a1a1a; --card-bg: #2a2a2a; --text: #e0e0e0;
       --text-secondary: #999; --file-row-bg: #333;
     }
+    [data-theme="dark"] .conn-dot { color: #aaa; }
+    [data-theme="dark"] .dot { background: #555; }
+    [data-theme="dark"] .empty { color: #777; }
+    [data-theme="dark"] .file-row .size { color: #777; }
+    [data-theme="dark"] .file-row a { color: #8ab4f8; }
+    [data-theme="dark"] .btn-downlink { background: #444; color: #e0e0e0; }
+    [data-theme="dark"] .btn-downlink:hover { background: #555; }
+    [data-theme="dark"] .btn-done-label { color: #81c784; }
+    [data-theme="dark"] .theme-select { border-color: #555; }
+    [data-theme="dark"] .pending-badge { background: #3e2723; color: #ffab40; }
+    [data-theme="dark"] .pending-badge.zero { background: #1b3a1b; color: #81c784; }
+    [data-theme="dark"] .badge.pending { background: #3e2723; color: #ffab40; }
+    [data-theme="dark"] .badge.printing { background: #0d2b4d; color: #8ab4f8; }
+    [data-theme="dark"] .badge.done { background: #1b3a1b; color: #81c784; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -147,11 +161,6 @@
   <div id="activeSection">
     <div class="empty" id="emptyState">Sin trabajos por el momento</div>
   </div>
-
-  <div id="doneSection" style="display:none">
-    <div class="section-label">Historial de hoy</div>
-    <div id="doneList"></div>
-  </div>
 </div>
 
 <audio id="notifSound" preload="auto"></audio>
@@ -179,8 +188,6 @@
 var jobs = {};
 var activeSection = document.getElementById("activeSection");
 var emptyState = document.getElementById("emptyState");
-var doneSection = document.getElementById("doneSection");
-var doneList = document.getElementById("doneList");
 var pendingBadge = document.getElementById("pendingBadge");
 var connDot = document.getElementById("connDot");
 var connLabel = document.getElementById("connLabel");
@@ -219,16 +226,11 @@ function render() {
   all.sort(function(a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
 
   var active = all.filter(function(j) { return j.status !== "done"; });
-  var done = all.filter(function(j) { return j.status === "done"; });
 
   emptyState.style.display = active.length === 0 ? "block" : "none";
   activeSection.innerHTML = "";
   if (active.length === 0) activeSection.appendChild(emptyState);
   active.forEach(function(j) { activeSection.appendChild(buildCard(j)); });
-
-  doneSection.style.display = done.length > 0 ? "block" : "none";
-  doneList.innerHTML = "";
-  done.forEach(function(j) { doneList.appendChild(buildCard(j)); });
 
   var pendingCount = all.filter(function(j) { return j.status === "pending"; }).length;
   pendingBadge.textContent = pendingCount + (pendingCount === 1 ? " pendiente" : " pendientes");
