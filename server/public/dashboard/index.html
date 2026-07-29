@@ -5,12 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PrintFlow - Panel</title>
   <style>
+    :root {
+      --bg: #f5f5f7; --card-bg: white; --text: #1a1a1a;
+      --text-secondary: #888; --file-row-bg: #f5f5f7;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1a; --card-bg: #2a2a2a; --text: #e0e0e0;
+      --text-secondary: #999; --file-row-bg: #333;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f5f7;
+      background: var(--bg);
       min-height: 100vh;
       padding: 24px;
+      color: var(--text);
     }
     .wrap { max-width: 960px; margin: 0 auto; }
     header {
@@ -28,8 +37,8 @@
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
     }
-    .brand h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; }
-    .brand p { font-size: 13px; color: #888; }
+    .brand h1 { font-size: 20px; font-weight: 700; color: var(--text); }
+    .brand p { font-size: 13px; color: var(--text-secondary); }
     .status-row { display: flex; align-items: center; gap: 16px; }
     .conn-dot { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
@@ -41,53 +50,54 @@
     }
     .pending-badge.zero { background: #e8f5e9; color: #2e7d32; }
 
+    .theme-select {
+      padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc;
+      font-size: 13px; background: var(--card-bg); color: var(--text);
+      font-family: inherit; cursor: pointer;
+    }
+
     .section-label {
-      font-size: 13px; font-weight: 600; color: #888;
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
       text-transform: uppercase; letter-spacing: 0.5px;
       margin: 20px 0 10px;
     }
     .empty {
-      background: white; border-radius: 16px; padding: 40px;
+      background: var(--card-bg); border-radius: 16px; padding: 40px;
       text-align: center; color: #aaa; font-size: 14px;
     }
 
     .job-card {
-      background: white; border-radius: 16px; padding: 18px 20px;
+      background: var(--card-bg); border-radius: 16px; padding: 18px 20px;
       margin-bottom: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
       transition: box-shadow 0.3s;
     }
     .job-card.done { opacity: 0.6; }
     .job-card.flash { box-shadow: 0 0 0 3px #1a73e8; }
-
     .job-top {
       display: flex; align-items: flex-start; justify-content: space-between;
       gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
     }
-    .job-id { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #1a1a1a; }
-    .job-meta { font-size: 13px; color: #888; margin-top: 2px; }
-    .job-meta span { color: #1a1a1a; font-weight: 600; }
-
+    .job-id { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: var(--text); }
+    .job-meta { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .job-meta span { color: var(--text); font-weight: 600; }
     .badge { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px; white-space: nowrap; }
     .badge.pending { background: #fff3e0; color: #e65100; }
     .badge.printing { background: #e8f0fe; color: #1a73e8; }
     .badge.done { background: #e8f5e9; color: #2e7d32; }
-
     .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
     .file-row {
       display: flex; align-items: center; gap: 10px;
-      background: #f5f5f7; border-radius: 10px; padding: 8px 12px;
+      background: var(--file-row-bg); border-radius: 10px; padding: 8px 12px;
       font-size: 13px;
     }
     .file-row .icon { font-size: 18px; flex-shrink: 0; }
-    .file-row .name { flex: 1; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-row .name { flex: 1; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .file-row .size { color: #aaa; font-size: 11px; flex-shrink: 0; }
     .file-row a {
       color: #1a73e8; text-decoration: none; font-weight: 600;
       font-size: 12px; flex-shrink: 0;
     }
     .file-row a:hover { text-decoration: underline; }
-
     .actions { display: flex; gap: 10px; }
     .btn {
       padding: 9px 16px; border-radius: 10px; border: none;
@@ -124,6 +134,11 @@
       </div>
     </div>
     <div class="status-row">
+      <select class="theme-select" id="themeSelect">
+        <option value="system">Sistema</option>
+        <option value="light">Claro</option>
+        <option value="dark">Oscuro</option>
+      </select>
       <div class="conn-dot"><span class="dot" id="connDot"></span><span id="connLabel">Conectando...</span></div>
       <div class="pending-badge zero" id="pendingBadge">0 pendientes</div>
     </div>
@@ -143,6 +158,24 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+(function() {
+  var select = document.getElementById("themeSelect");
+  var stored = localStorage.getItem("printflow-theme") || "system";
+  select.value = stored;
+  applyTheme(stored);
+  select.addEventListener("change", function() {
+    localStorage.setItem("printflow-theme", select.value);
+    applyTheme(select.value);
+  });
+  function applyTheme(v) {
+    if (v === "system") {
+      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.body.setAttribute("data-theme", dark ? "dark" : "light");
+    } else {
+      document.body.setAttribute("data-theme", v);
+    }
+  }
+})();
 var jobs = {};
 var activeSection = document.getElementById("activeSection");
 var emptyState = document.getElementById("emptyState");
