@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrintFlow - Panel</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: #1a73e8;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    .brand p { font-size: 13px; color: #888; }
+    .status-row { display: flex; align-items: center; gap: 16px; }
+    .conn-dot { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+    .dot.on { background: #34a853; }
+    .pending-badge {
+      background: #fff3e0; color: #e65100;
+      padding: 6px 14px; border-radius: 99px;
+      font-size: 13px; font-weight: 600;
+    }
+    .pending-badge.zero { background: #e8f5e9; color: #2e7d32; }
+
+    .section-label {
+      font-size: 13px; font-weight: 600; color: #888;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin: 20px 0 10px;
+    }
+    .empty {
+      background: white; border-radius: 16px; padding: 40px;
+      text-align: center; color: #aaa; font-size: 14px;
+    }
+
+    .job-card {
+      background: white; border-radius: 16px; padding: 18px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border-left: 4px solid #ccc;
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+    .job-card.pending { border-left-color: #f9a825; }
+    .job-card.printing { border-left-color: #1a73e8; }
+    .job-card.done { border-left-color: #34a853; opacity: 0.6; }
+    .job-card.flash { box-shadow: 0 0 0 3px #1a73e8; }
+
+    .job-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .job-id { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #1a1a1a; }
+    .job-meta { font-size: 13px; color: #888; margin-top: 2px; }
+    .job-meta span { color: #1a1a1a; font-weight: 600; }
+
+    .badge { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px; white-space: nowrap; }
+    .badge.pending { background: #fff3e0; color: #e65100; }
+    .badge.printing { background: #e8f0fe; color: #1a73e8; }
+    .badge.done { background: #e8f5e9; color: #2e7d32; }
+
+    .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .file-row {
+      display: flex; align-items: center; gap: 10px;
+      background: #f5f5f7; border-radius: 10px; padding: 8px 12px;
+      font-size: 13px;
+    }
+    .file-row .icon { font-size: 18px; flex-shrink: 0; }
+    .file-row .name { flex: 1; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-row .size { color: #aaa; font-size: 11px; flex-shrink: 0; }
+    .file-row a {
+      color: #1a73e8; text-decoration: none; font-weight: 600;
+      font-size: 12px; flex-shrink: 0;
+    }
+    .file-row a:hover { text-decoration: underline; }
+
+    .actions { display: flex; gap: 10px; }
+    .btn {
+      padding: 9px 16px; border-radius: 10px; border: none;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: background 0.2s;
+    }
+    .btn-primary { background: #1a73e8; color: white; }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover { background: #2a8644; }
+    .btn-done-label { color: #2e7d32; font-size: 13px; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>PrintFlow</h1>
+        <p>Panel de trabajos</p>
+      </div>
+    </div>
+    <div class="status-row">
+      <div class="conn-dot"><span class="dot" id="connDot"></span><span id="connLabel">Conectando...</span></div>
+      <div class="pending-badge zero" id="pendingBadge">0 pendientes</div>
+    </div>
+  </header>
+
+  <div id="activeSection">
+    <div class="empty" id="emptyState">Sin trabajos por el momento</div>
+  </div>
+
+  <div id="doneSection" style="display:none">
+    <div class="section-label">Historial de hoy</div>
+    <div id="doneList"></div>
+  </div>
+</div>
+
+<audio id="notifSound" preload="auto"></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var jobs = {};
+var activeSection = document.getElementById("activeSection");
+var emptyState = document.getElementById("emptyState");
+var doneSection = document.getElementById("doneSection");
+var doneList = document.getElementById("doneList");
+var pendingBadge = document.getElementById("pendingBadge");
+var connDot = document.getElementById("connDot");
+var connLabel = document.getElementById("connLabel");
+
+var socket = io();
+
+socket.on("connect", function() {
+  connDot.classList.add("on");
+  connLabel.textContent = "Conectado";
+});
+socket.on("disconnect", function() {
+  connDot.classList.remove("on");
+  connLabel.textContent = "Desconectado";
+});
+
+socket.on("queue_init", function(queue) {
+  jobs = {};
+  queue.forEach(function(j) { jobs[j.id] = j; });
+  render();
+});
+
+socket.on("new_job", function(job) {
+  jobs[job.id] = job;
+  render();
+  playBeep();
+  flashCard(job.id);
+});
+
+socket.on("job_updated", function(job) {
+  jobs[job.id] = job;
+  render();
+});
+
+function render() {
+  var all = Object.keys(jobs).map(function(k) { return jobs[k]; });
+  all.sort(function(a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+
+  var active = all.filter(function(j) { return j.status !== "done"; });
+  var done = all.filter(function(j) { return j.status === "done"; });
+
+  emptyState.style.display = active.length === 0 ? "block" : "none";
+  activeSection.innerHTML = "";
+  if (active.length === 0) activeSection.appendChild(emptyState);
+  active.forEach(function(j) { activeSection.appendChild(buildCard(j)); });
+
+  doneSection.style.display = done.length > 0 ? "block" : "none";
+  doneList.innerHTML = "";
+  done.forEach(function(j) { doneList.appendChild(buildCard(j)); });
+
+  var pendingCount = all.filter(function(j) { return j.status === "pending"; }).length;
+  pendingBadge.textContent = pendingCount + (pendingCount === 1 ? " pendiente" : " pendientes");
+  pendingBadge.classList.toggle("zero", pendingCount === 0);
+}
+
+function buildCard(job) {
+  var card = document.createElement("div");
+  card.className = "job-card " + job.status;
+  card.id = "card-" + job.id;
+
+  var statusLabel = { pending: "Pendiente", printing: "Imprimiendo", done: "Listo" }[job.status] || job.status;
+  var time = formatTime(job.timestamp);
+
+  var filesHtml = job.files.map(function(f) {
+    return '<div class="file-row">' +
+      '<span class="icon">' + getFileIcon(f.originalName) + '</span>' +
+      '<span class="name">' + escapeHtml(f.originalName) + '</span>' +
+      '<span class="size">' + formatSize(f.size) + '</span>' +
+      '<a href="/uploads/' + f.savedName + '" target="_blank">Ver / Imprimir</a>' +
+      '</div>';
+  }).join("");
+
+  var actionsHtml = "";
+  if (job.status === "pending") {
+    actionsHtml = '<button class="btn btn-primary" data-action="printing" data-id="' + job.id + '">Marcar imprimiendo</button>' +
+      '<button class="btn btn-success" data-action="done" data-id="' + job.id + '">Marcar listo</button>';
+  } else if (job.status === "printing") {
+    actionsHtml = '<button class="btn btn-success" data-action="done" data-id="' + job.id + '">Marcar listo</button>';
+  } else {
+    actionsHtml = '<span class="btn-done-label">&#10003; Entregado</span>';
+  }
+
+  card.innerHTML =
+    '<div class="job-top">' +
+      '<div>' +
+        '<div class="job-id">' + job.id + '</div>' +
+        '<div class="job-meta"><span>' + escapeHtml(job.clientName) + '</span> &middot; ' + time + '</div>' +
+      '</div>' +
+      '<div class="badge ' + job.status + '">' + statusLabel + '</div>' +
+    '</div>' +
+    '<div class="file-list">' + filesHtml + '</div>' +
+    '<div class="actions">' + actionsHtml + '</div>';
+
+  card.querySelectorAll("[data-action]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      updateStatus(btn.dataset.id, btn.dataset.action);
+    });
+  });
+
+  return card;
+}
+
+function updateStatus(id, status) {
+  fetch("/api/job/" + id + "/status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: status })
+  });
+}
+
+function flashCard(id) {
+  setTimeout(function() {
+    var el = document.getElementById("card-" + id);
+    if (!el) return;
+    el.classList.add("flash");
+    setTimeout(function() { el.classList.remove("flash"); }, 1500);
+  }, 50);
+}
+
+function getFileIcon(name) {
+  var ext = name.split(".").pop().toLowerCase();
+  var map = { pdf: "\ud83d\udcc4", jpg: "\ud83d\uddbc\ufe0f", jpeg: "\ud83d\uddbc\ufe0f", png: "\ud83d\uddbc\ufe0f", docx: "\ud83d\udcdd", doc: "\ud83d\udcdd", xlsx: "\ud83d\udcca", xls: "\ud83d\udcca", txt: "\ud83d\udcc3" };
+  return map[ext] || "\ud83d\udcce";
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1048576).toFixed(1) + " MB";
+}
+
+function formatTime(iso) {
+  var d = new Date(iso);
+  return d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function escapeHtml(str) {
+  var div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function playBeep() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {}
+}
+</script>
+</body>
+</html>
