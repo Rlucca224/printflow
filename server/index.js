@@ -105,6 +105,25 @@ app.post("/api/job/:id/done", (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/api/job/:id/download", (req, res) => {
+  const job = queue.find(j => j.id === req.params.id);
+  if (!job || job.files.length === 0) return res.status(404).json({ error: "Trabajo no encontrado" });
+
+  const uploadsDir = path.join(__dirname, "uploads");
+  const zipName = "trabajo-" + job.id + ".zip";
+  const zipPath = path.join("/tmp", zipName);
+
+  try {
+    const fileArgs = job.files.map(f => uploadsDir + "/" + f.savedName).join(" ");
+    execSync("zip -j \"" + zipPath + "\" " + fileArgs);
+    res.download(zipPath, zipName, () => {
+      try { fs.unlinkSync(zipPath); } catch (e) {}
+    });
+  } catch (e) {
+    res.status(500).json({ error: "Error al crear ZIP" });
+  }
+});
+
 app.get("/uploads/:filename", (req, res) => {
   res.sendFile(path.join(__dirname, "uploads", req.params.filename));
 });
