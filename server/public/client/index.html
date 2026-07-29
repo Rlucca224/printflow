@@ -86,6 +86,15 @@
     }
     .btn:hover { background: #1557b0; }
     .btn:disabled { background: #b0c8f0; cursor: not-allowed; }
+    .btn-outline {
+      width: 100%; padding: 15px;
+      background: white; color: #1a73e8;
+      border: 2px solid #1a73e8; border-radius: 12px;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      font-family: inherit; margin-top: 16px;
+    }
+    .btn-outline:hover { background: #f0f6ff; }
     .progress-wrap { margin-top: 16px; display: none; }
     .progress-bar-bg { background: #eee; border-radius: 99px; height: 8px; overflow: hidden; }
     .progress-bar-fill { background: #1a73e8; height: 100%; border-radius: 99px; transition: width 0.3s; width: 0%; }
@@ -162,6 +171,7 @@
     <div class="success-note">
       Decile al empleado este numero y en un momento te atendemos
     </div>
+    <button class="btn-outline" onclick="location.reload()">Volver</button>
   </div>
 </div>
 
