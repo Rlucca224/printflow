@@ -102,7 +102,7 @@
     .btn-success { background: #34a853; color: white; }
     .btn-success:hover { background: #2a8644; }
     .btn-done-label { color: #2e7d32; font-size: 13px; font-weight: 600; }
-    .file-list-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+    .file-list-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
     .btn-downlink {
       display: inline-block; padding: 8px 16px; border-radius: 10px;
       background: #e8f0fe; color: #1a73e8; font-size: 13px; font-weight: 600;
@@ -241,7 +241,7 @@ function buildCard(job) {
       '<div class="badge ' + job.status + '">' + statusLabel + '</div>' +
     '</div>' +
     '<div class="file-list">' + filesHtml + '</div>' +
-    (job.files.length > 1 ? '<div class="file-list-actions"><a class="btn-downlink" href="/api/job/' + job.id + '/download">Descargar todo (ZIP)</a></div>' : '') +
+    (job.files.length > 1 ? '<div class="file-list-actions"><a class="btn-downlink" href="/api/job/' + job.id + '/download">Descargar todo</a></div>' : '') +
     '<div class="actions">' + actionsHtml + '</div>';
 
   card.querySelectorAll("[data-action]").forEach(function(btn) {
