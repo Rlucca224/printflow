@@ -64,38 +64,31 @@
     .pending-badge.zero { background: #e8f5e9; color: #2e7d32; }
 
     .theme-toggle {
-      position: relative;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
       display: inline-flex;
       background: var(--file-row-bg);
-      border-radius: 8px;
-      padding: 2px;
+      border-radius: 999px;
+      padding: 3px;
       gap: 2px;
     }
-    .theme-indicator {
-      position: absolute;
-      top: 2px; left: 2px;
-      width: 28px; height: 28px;
-      background: var(--card-bg);
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-      transition: transform 0.2s ease;
-      z-index: 0;
-    }
     .theme-btn {
-      position: relative;
-      z-index: 1;
       width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center;
       background: transparent;
       border: none;
-      border-radius: 6px;
+      border-radius: 50%;
       cursor: pointer;
       color: var(--text-secondary);
-      transition: color 0.2s;
+      transition: background 0.15s, color 0.15s;
     }
-    .theme-btn.active { color: var(--text); }
+    .theme-btn.active {
+      background: var(--card-bg);
+      color: var(--text);
+    }
     .theme-btn svg { width: 15px; height: 15px; }
-    [data-theme="dark"] .theme-indicator { background: #3a3a3a; }
 
     .section-label {
       font-size: 13px; font-weight: 600; color: var(--text-secondary);
@@ -176,7 +169,6 @@
     </div>
     <div class="status-row">
       <div class="theme-toggle" id="themeToggle">
-        <span class="theme-indicator" id="themeIndicator"></span>
         <button class="theme-btn" data-theme-value="system" title="Sistema">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </button>
@@ -203,17 +195,13 @@
 <script>
 (function() {
   var toggle = document.getElementById("themeToggle");
-  var indicator = document.getElementById("themeIndicator");
   var buttons = toggle.querySelectorAll(".theme-btn");
-  var order = ["system", "light", "dark"];
   var stored = localStorage.getItem("printflow-theme") || "system";
 
   function setActive(value) {
-    var idx = order.indexOf(value);
     buttons.forEach(function(btn) {
       btn.classList.toggle("active", btn.dataset.themeValue === value);
     });
-    indicator.style.transform = "translateX(" + (idx * 30) + "px)";
   }
 
   function applyTheme(v) {
