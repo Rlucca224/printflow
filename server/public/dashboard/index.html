@@ -163,15 +163,13 @@
     .file-row a:hover { text-decoration: underline; }
     .actions { display: flex; gap: 10px; }
     .btn {
-      padding: 9px 16px; border-radius: 10px; border: none;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      font-family: inherit; transition: background 0.2s;
+      padding: 7px 14px; border-radius: 8px; border: 1px solid var(--text-secondary);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      font-family: inherit; background: transparent; color: var(--text);
+      transition: border-color 0.15s, color 0.15s;
     }
-    .btn-primary { background: #1a73e8; color: white; }
-    .btn-primary:hover { background: #1557b0; }
-    .btn-success { background: #34a853; color: white; }
-    .btn-success:hover { background: #2a8644; }
-    .btn-done-label { color: #2e7d32; font-size: 13px; font-weight: 600; }
+    .btn:hover { border-color: var(--text); }
+    .btn-done-label { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
     .file-list-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
     .btn-downlink {
       display: inline-block; padding: 8px 16px; border-radius: 10px;
@@ -326,11 +324,8 @@ function buildCard(job) {
   }).join("");
 
   var actionsHtml = "";
-  if (job.status === "pending") {
-    actionsHtml = '<button class="btn btn-primary" data-action="printing" data-id="' + job.id + '">Marcar imprimiendo</button>' +
-      '<button class="btn btn-success" data-action="done" data-id="' + job.id + '">Marcar listo</button>';
-  } else if (job.status === "printing") {
-    actionsHtml = '<button class="btn btn-success" data-action="done" data-id="' + job.id + '">Marcar listo</button>';
+  if (job.status !== "done") {
+    actionsHtml = '<button class="btn" data-action="done" data-id="' + job.id + '">Marcar listo</button>';
   } else {
     actionsHtml = '<span class="btn-done-label">&#10003; Entregado</span>';
   }
