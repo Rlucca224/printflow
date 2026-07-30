@@ -88,6 +88,8 @@
       color: var(--text);
     }
     .theme-btn svg { width: 15px; height: 15px; }
+    .theme-btn:not(.active):hover { color: #555; }
+    [data-theme="dark"] .theme-btn:not(.active):hover { color: #ccc; }
 
     .section-label {
       font-size: 13px; font-weight: 600; color: var(--text-secondary);
