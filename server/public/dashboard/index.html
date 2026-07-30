@@ -36,13 +36,21 @@
     }
     .wrap { max-width: 960px; margin: 0 auto; }
     header {
-      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      row-gap: 10px;
+      column-gap: 16px;
+      padding: 20px 24px;
+    }
+    .header-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
+      flex: 1 1 auto;
+      min-width: 0;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
     .brand-icon {
@@ -53,7 +61,12 @@
     }
     .brand h1 { font-size: 20px; font-weight: 700; color: var(--text); }
     .brand p { font-size: 13px; color: var(--text-secondary); }
-    .status-row { display: flex; align-items: center; gap: 16px; }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
     .conn-dot { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
     .dot.on { background: #34a853; }
@@ -65,16 +78,12 @@
     .pending-badge.zero { background: #e8f5e9; color: #2e7d32; }
 
     .theme-toggle {
-      position: absolute;
-      top: 50%;
-      right: 20px;
-      transform: translateY(-50%);
-      z-index: 999;
       display: inline-flex;
       background: var(--file-row-bg);
       border-radius: 999px;
       padding: 3px;
       gap: 2px;
+      flex-shrink: 0;
     }
     .theme-btn {
       width: 28px; height: 28px;
@@ -93,26 +102,12 @@
     .theme-btn:not(.active):hover { color: #000000; }
     [data-theme="dark"] .theme-btn:not(.active):hover { color: #ffffff; }
 
-    @media (max-width: 1200px) {
-      .wrap { padding: 0 16px; }
-    }
-
     @media (max-width: 992px) {
-      header { padding: 16px; flex-wrap: wrap; row-gap: 10px; }
-      .status-row { gap: 10px; }
-      .job-top { flex-direction: column; align-items: flex-start; }
+      header { padding: 16px; }
     }
 
     @media (max-width: 768px) {
-      header { flex-direction: column; align-items: flex-start; }
-      .theme-toggle {
-        position: static;
-        transform: none;
-        align-self: flex-end;
-        margin-top: 8px;
-      }
-      .status-row { width: 100%; justify-content: space-between; flex-wrap: wrap; }
-      .brand h1 { font-size: 18px; }
+      .status-row { width: 100%; justify-content: flex-end; }
     }
 
     @media (max-width: 576px) {
@@ -121,6 +116,7 @@
       .actions { flex-direction: column; }
       .btn { width: 100%; }
       .file-row { flex-wrap: wrap; }
+      .brand h1 { font-size: 18px; }
     }
 
 
@@ -190,18 +186,18 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">
-      <div class="brand-icon">
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1>PrintFlow</h1>
+          <p>Panel de trabajos</p>
+        </div>
       </div>
-      <div>
-        <h1>PrintFlow</h1>
-        <p>Panel de trabajos</p>
-      </div>
-    </div>
-    <div class="status-row">
       <div class="theme-toggle" id="themeToggle">
         <button class="theme-btn" data-theme-value="system" title="Sistema">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -213,6 +209,8 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         </button>
       </div>
+    </div>
+    <div class="status-row">
       <div class="conn-dot"><span class="dot" id="connDot"></span><span id="connLabel">Conectando...</span></div>
       <div class="pending-badge zero" id="pendingBadge">0 pendientes</div>
     </div>
