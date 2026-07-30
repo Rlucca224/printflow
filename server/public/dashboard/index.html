@@ -21,7 +21,6 @@
     [data-theme="dark"] .btn-downlink { background: #444; color: #e0e0e0; }
     [data-theme="dark"] .btn-downlink:hover { background: #555; }
     [data-theme="dark"] .btn-done-label { color: #81c784; }
-    [data-theme="dark"] .theme-select { border-color: #555; }
     [data-theme="dark"] .pending-badge { background: #3e2723; color: #ffab40; }
     [data-theme="dark"] .pending-badge.zero { background: #1b3a1b; color: #81c784; }
     [data-theme="dark"] .badge.pending { background: #3e2723; color: #ffab40; }
@@ -64,11 +63,39 @@
     }
     .pending-badge.zero { background: #e8f5e9; color: #2e7d32; }
 
-    .theme-select {
-      padding: 5px 10px; border-radius: 8px; border: 1px solid #ccc;
-      font-size: 13px; background: var(--card-bg); color: var(--text);
-      font-family: inherit; cursor: pointer;
+    .theme-toggle {
+      position: relative;
+      display: inline-flex;
+      background: var(--file-row-bg);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
     }
+    .theme-indicator {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 28px; height: 28px;
+      background: var(--card-bg);
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease;
+      z-index: 0;
+    }
+    .theme-btn {
+      position: relative;
+      z-index: 1;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .theme-btn.active { color: var(--text); }
+    .theme-btn svg { width: 15px; height: 15px; }
+    [data-theme="dark"] .theme-indicator { background: #3a3a3a; }
 
     .section-label {
       font-size: 13px; font-weight: 600; color: var(--text-secondary);
@@ -148,11 +175,18 @@
       </div>
     </div>
     <div class="status-row">
-      <select class="theme-select" id="themeSelect">
-        <option value="system">Sistema</option>
-        <option value="light">Claro</option>
-        <option value="dark">Oscuro</option>
-      </select>
+      <div class="theme-toggle" id="themeToggle">
+        <span class="theme-indicator" id="themeIndicator"></span>
+        <button class="theme-btn" data-theme-value="system" title="Sistema">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </button>
+        <button class="theme-btn" data-theme-value="light" title="Claro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+        </button>
+        <button class="theme-btn" data-theme-value="dark" title="Oscuro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+      </div>
       <div class="conn-dot"><span class="dot" id="connDot"></span><span id="connLabel">Conectando...</span></div>
       <div class="pending-badge zero" id="pendingBadge">0 pendientes</div>
     </div>
@@ -168,14 +202,20 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
 (function() {
-  var select = document.getElementById("themeSelect");
+  var toggle = document.getElementById("themeToggle");
+  var indicator = document.getElementById("themeIndicator");
+  var buttons = toggle.querySelectorAll(".theme-btn");
+  var order = ["system", "light", "dark"];
   var stored = localStorage.getItem("printflow-theme") || "system";
-  select.value = stored;
-  applyTheme(stored);
-  select.addEventListener("change", function() {
-    localStorage.setItem("printflow-theme", select.value);
-    applyTheme(select.value);
-  });
+
+  function setActive(value) {
+    var idx = order.indexOf(value);
+    buttons.forEach(function(btn) {
+      btn.classList.toggle("active", btn.dataset.themeValue === value);
+    });
+    indicator.style.transform = "translateX(" + (idx * 30) + "px)";
+  }
+
   function applyTheme(v) {
     if (v === "system") {
       var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -184,6 +224,18 @@
       document.body.setAttribute("data-theme", v);
     }
   }
+
+  setActive(stored);
+  applyTheme(stored);
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var value = btn.dataset.themeValue;
+      localStorage.setItem("printflow-theme", value);
+      setActive(value);
+      applyTheme(value);
+    });
+  });
 })();
 var jobs = {};
 var activeSection = document.getElementById("activeSection");
