@@ -174,6 +174,32 @@
     }
     [data-theme="dark"] .btn:hover { background: #ccc; }
     .btn-done-label { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+
+    .tabs { display: flex; gap: 2px; margin-bottom: 20px; }
+    .tab-btn {
+      padding: 8px 18px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: inherit; background: transparent; color: var(--text-secondary);
+    }
+    .tab-btn.active { background: var(--card-bg); color: var(--text); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .qr-panel { text-align: center; background: var(--card-bg); border-radius: 16px; padding: 32px; max-width: 420px; margin: 0 auto; }
+    .qr-panel img { display: block; margin: 0 auto 24px; border-radius: 12px; }
+    .qr-field { margin-bottom: 16px; text-align: left; }
+    .qr-field label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+    .qr-field input {
+      width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px;
+      font-size: 14px; font-family: inherit; background: var(--file-row-bg); color: var(--text);
+      outline: none;
+    }
+    .qr-field input:focus { border-color: #1a73e8; }
+    .qr-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .qr-actions .btn-gen { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; background: #1a73e8; color: #fff; }
+    .qr-actions .btn-gen:hover { background: #1557b0; }
+    [data-theme="dark"] .qr-field input { border-color: #555; }
+
     .file-list-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
     .btn-downlink {
       display: inline-block; padding: 8px 16px; border-radius: 10px;
@@ -217,8 +243,36 @@
     </div>
   </header>
 
-  <div id="activeSection">
-    <div class="empty" id="emptyState">Sin trabajos por el momento</div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="queue">Cola de trabajos</button>
+    <button class="tab-btn" data-tab="qr">QR WiFi</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-queue">
+    <div id="activeSection">
+      <div class="empty" id="emptyState">Sin trabajos por el momento</div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panel-qr">
+    <div class="qr-panel">
+      <img id="qrImage" src="/api/qr?ssid=PrintFlow&pass=" alt="QR WiFi">
+      <div class="qr-field">
+        <label>SSID</label>
+        <input type="text" id="qrSsid" value="PrintFlow">
+      </div>
+      <div class="qr-field">
+        <label>Contraseña actual</label>
+        <input type="text" id="qrCurrentPass" value="" readonly>
+      </div>
+      <div class="qr-field">
+        <label>Nueva contraseña</label>
+        <input type="text" id="qrNewPass" placeholder="Dejar vacío si es red abierta">
+      </div>
+      <div class="qr-actions">
+        <button class="btn-gen" id="qrGenerate">Generar QR</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -258,6 +312,27 @@
     });
   });
 })();
+
+(function() {
+  var tabs = document.querySelectorAll(".tab-btn");
+  tabs.forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      tabs.forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".tab-panel").forEach(function(p) { p.classList.remove("active"); });
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  document.getElementById("qrGenerate").addEventListener("click", function() {
+    var ssid = document.getElementById("qrSsid").value || "PrintFlow";
+    var pass = document.getElementById("qrNewPass").value;
+    document.getElementById("qrImage").src = "/api/qr?ssid=" + encodeURIComponent(ssid) + "&pass=" + encodeURIComponent(pass);
+    document.getElementById("qrCurrentPass").value = pass;
+    document.getElementById("qrNewPass").value = "";
+  });
+})();
+
 var jobs = {};
 var activeSection = document.getElementById("activeSection");
 var emptyState = document.getElementById("emptyState");

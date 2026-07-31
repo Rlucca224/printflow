@@ -55,6 +55,15 @@ app.post("/upload", upload.array("files", 10), (req, res) => {
 
 app.get("/api/queue", (req, res) => res.json(queue));
 
+app.get("/api/qr", (req, res) => {
+  const ssid = req.query.ssid || "PrintFlow";
+  const pass = req.query.pass || "";
+  const wifiString = pass ? "WIFI:T:WPA;S:" + ssid + ";P:" + pass + ";;" : "WIFI:T:nopass;S:" + ssid + ";;";
+  const png = execSync("qrencode -o - -s 8 \"" + wifiString + "\"", { encoding: "buffer" });
+  res.set("Content-Type", "image/png");
+  res.send(png);
+});
+
 app.post("/api/job/:id/status", (req, res) => {
   const validStatuses = ["pending", "printing", "done"];
   const status = req.body.status;
