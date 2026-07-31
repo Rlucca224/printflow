@@ -5,7 +5,8 @@ const http = require("http");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
-const { execSync } = require("child_process");
+const fs = require("fs");
+const { execSync, execFileSync } = require("child_process");
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,29 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+const configPath = path.join(__dirname, "config.json");
+const defaultConfig = { ssid: "uPrint", pass: "" };
+
+function loadConfig() {
+  try {
+    if (fs.existsSync(configPath)) {
+      return { ...defaultConfig, ...JSON.parse(fs.readFileSync(configPath, "utf8")) };
+    }
+  } catch (e) {
+    console.error("Error leyendo config.json:", e.message);
+  }
+  return { ...defaultConfig };
+}
+
+function saveConfig(config) {
+  try {
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  } catch (e) {
+    console.error("Error guardando config.json:", e.message);
+  }
+}
+
+let config = loadConfig();
 const queue = [];
 
 const storage = multer.diskStorage({
@@ -55,13 +79,29 @@ app.post("/upload", upload.array("files", 10), (req, res) => {
 
 app.get("/api/queue", (req, res) => res.json(queue));
 
+app.get("/api/config", (req, res) => {
+  res.json(config);
+});
+
 app.get("/api/qr", (req, res) => {
-  const ssid = req.query.ssid || "PrintFlow";
-  const pass = req.query.pass || "";
-  const wifiString = pass ? "WIFI:T:WPA;S:" + ssid + ";P:" + pass + ";;" : "WIFI:T:nopass;S:" + ssid + ";;";
-  const png = execSync("qrencode -o - -s 8 \"" + wifiString + "\"", { encoding: "buffer" });
-  res.set("Content-Type", "image/png");
-  res.send(png);
+  let qrString;
+  if (req.query.text) {
+    qrString = req.query.text;
+  } else {
+    const ssid = req.query.ssid || config.ssid || "uPrint";
+    const pass = req.query.pass !== undefined ? req.query.pass : config.pass;
+    qrString = pass ? "WIFI:T:WPA;S:" + ssid + ";P:" + pass + ";;" : "WIFI:T:nopass;S:" + ssid + ";;";
+    config.ssid = ssid;
+    config.pass = pass;
+    saveConfig(config);
+  }
+  try {
+    const png = execFileSync("qrencode", ["-o", "-", "-s", "8", qrString], { encoding: "buffer" });
+    res.set("Content-Type", "image/png");
+    res.send(png);
+  } catch (e) {
+    res.status(500).json({ error: "Error al generar QR" });
+  }
 });
 
 app.post("/api/job/:id/status", (req, res) => {
@@ -117,5 +157,5 @@ io.on("connection", (socket) => {
 
 const PORT = 3000;
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("PrintFlow corriendo en http://0.0.0.0:" + PORT);
+  console.log("uPrint corriendo en http://0.0.0.0:" + PORT);
 });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>PrintFlow</title>
+  <title>uPrint</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -123,7 +123,7 @@
           <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <h1>PrintFlow</h1>
+      <h1>uPrint</h1>
       <p>Envia tus archivos para imprimir</p>
     </div>
 
@@ -282,7 +282,7 @@ sendBtn.addEventListener("click", function(){
   });
 
   xhr.addEventListener("error", function(){
-    alert("Error de conexion. Verifica que estes conectado a PrintFlow.");
+    alert("Error de conexion. Verifica que estes conectado a uPrint.");
     sendBtn.disabled = false;
     progressWrap.style.display = "none";
   });

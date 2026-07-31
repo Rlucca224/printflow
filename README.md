@@ -1,4 +1,4 @@
-# PrintFlow
+# uPrint
 
 Print shop file drop system. Customers scan a QR, connect to the shop's WiFi hotspot, upload files from their phone's browser, and the employee receives them in real time on a dashboard. Replaces WhatsApp.
 
@@ -18,7 +18,7 @@ Customer phone                CachyOS (server)              Windows 11 (dashboar
 
 ## How it works
 
-1. **Customer scans QR 1** → phone connects to `PrintFlow` WiFi (open network, no password)
+1. **Customer scans QR 1** → phone connects to `uPrint` WiFi (open network, no password)
 2. **Customer scans QR 2** → browser opens `http://192.168.10.1:3000` (without QR, the captive portal auto-popup also opens the upload page)
 3. **Upload** → files are sent via POST to the Node.js server with progress indicator
 4. **Job code** → customer receives a 6-character alphanumeric code to tell the employee
@@ -30,13 +30,13 @@ Customer phone                CachyOS (server)              Windows 11 (dashboar
 
 | Component | Role |
 |---|---|
-| `hostapd` | Converts USB WiFi adapter into an access point (SSID: PrintFlow) |
+| `hostapd` | Converts USB WiFi adapter into an access point (SSID: uPrint) |
 | `dnsmasq` | DHCP server (192.168.10.100-200) + DNS hijack (all domains → 192.168.10.1) |
 | `nftables` | Firewall: blocks internet access, redirects HTTP port 80 → 3000, blocks MAC after upload |
 | `enp1s0` | Ethernet — internet uplink |
 | `wlan0` | USB WiFi adapter — customer hotspot |
 
-No internet access for customers — they can only reach PrintFlow.
+No internet access for customers — they can only reach uPrint.
 
 ## Tech stack
 
