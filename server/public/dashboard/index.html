@@ -31,18 +31,18 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
       min-height: 100vh;
-      padding: 56px 24px 24px;
       color: var(--text);
     }
-    .wrap { max-width: 960px; margin: 0 auto; padding-top: 24px; }
-    header {
+    .app { display: flex; min-height: 100vh; }
+    .main { flex: 1; padding: 20px 32px 32px; overflow: auto; }
+    .main header {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       row-gap: 10px;
       column-gap: 16px;
-      padding: 20px 24px;
+      padding: 4px 0 16px;
     }
     .header-top {
       display: flex;
@@ -106,16 +106,25 @@
     [data-theme="dark"] .theme-btn:not(.active):hover { color: #ffffff; }
 
     @media (max-width: 992px) {
-      header { padding: 16px; }
+      .main { padding: 16px 20px 20px; }
+      .main header { padding: 16px 0; }
     }
 
     @media (max-width: 768px) {
+      .app { flex-direction: column; }
+      .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 12px 16px; }
+      .sidebar .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 0; }
+      .sidebar .brand-icon { width: 38px; height: 38px; margin-bottom: 0; }
+      .nav-item { width: auto; }
       .status-row { width: 100%; justify-content: flex-end; }
     }
 
     @media (max-width: 576px) {
-      body { padding: 44px 12px 12px; }
+      body { padding: 0; }
       .theme-toggle { top: 12px; right: 12px; }
+      .main { padding: 12px; }
+      .sidebar .brand h1 { font-size: 17px; }
+      .sidebar .brand p { display: none; }
       .job-card { padding: 14px; }
       .actions { flex-direction: column; }
       .btn { width: 100%; }
@@ -175,13 +184,25 @@
     [data-theme="dark"] .btn:hover { background: #ccc; }
     .btn-done-label { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
 
-    .tabs { display: flex; gap: 2px; margin-bottom: 20px; }
-    .tab-btn {
-      padding: 8px 18px; border: none; border-radius: 8px;
+    .sidebar {
+      width: 240px; background: var(--card-bg); border-right: 1px solid #e0e0e0;
+      padding: 24px 16px; display: flex; flex-direction: column; gap: 8px;
+    }
+    [data-theme="dark"] .sidebar { border-right-color: #333; }
+    .sidebar .brand { margin-bottom: 16px; }
+    .sidebar .brand-icon { margin-bottom: 12px; }
+    .sidebar .brand h1 { font-size: 20px; margin: 0; }
+    .sidebar .brand p { margin: 2px 0 0; font-size: 13px; color: var(--text-secondary); }
+    .nav-item {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 10px;
       font-size: 14px; font-weight: 500; cursor: pointer;
       font-family: inherit; background: transparent; color: var(--text-secondary);
+      text-align: left; display: flex; align-items: center; gap: 10px;
     }
-    .tab-btn.active { background: var(--card-bg); color: var(--text); }
+    .nav-item:hover { background: var(--file-row-bg); color: var(--text); }
+    .nav-item.active { background: var(--file-row-bg); color: var(--text); }
+    .nav-icon { width: 18px; height: 18px; }
+    .main header { margin-bottom: 20px; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
@@ -222,58 +243,64 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
   </button>
 </div>
-<div class="wrap">
-  <header>
-    <div class="header-top">
-      <div class="brand">
-        <div class="brand-icon">
-          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6v-7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>PrintFlow</h1>
+        <p>Panel de trabajos</p>
+      </div>
+    </div>
+    <button class="nav-item active" data-tab="queue">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Cola de trabajos
+    </button>
+    <button class="nav-item" data-tab="qr">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      QR WiFi
+    </button>
+  </aside>
+
+  <main class="main">
+    <header>
+      <div class="status-row">
+        <div class="conn-dot"><span class="dot" id="connDot"></span><span id="connLabel">Conectando...</span></div>
+        <div class="pending-badge zero" id="pendingBadge">0 pendientes</div>
+      </div>
+    </header>
+
+    <div class="tab-panel active" id="panel-queue">
+      <div id="activeSection">
+        <div class="empty" id="emptyState">Sin trabajos por el momento</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-qr">
+      <div class="qr-panel">
+        <img id="qrImage" src="/api/qr?ssid=PrintFlow&pass=" alt="QR WiFi">
+        <div class="qr-field">
+          <label>SSID</label>
+          <input type="text" id="qrSsid" value="PrintFlow">
         </div>
-        <div>
-          <h1>PrintFlow</h1>
-          <p>Panel de trabajos</p>
+        <div class="qr-field">
+          <label>Contraseña actual</label>
+          <input type="text" id="qrCurrentPass" value="" readonly>
+        </div>
+        <div class="qr-field">
+          <label>Nueva contraseña</label>
+          <input type="text" id="qrNewPass" placeholder="Dejar vacío si es red abierta">
+        </div>
+        <div class="qr-actions">
+          <button class="btn-gen" id="qrGenerate">Generar QR</button>
         </div>
       </div>
     </div>
-    <div class="status-row">
-      <div class="conn-dot"><span class="dot" id="connDot"></span><span id="connLabel">Conectando...</span></div>
-      <div class="pending-badge zero" id="pendingBadge">0 pendientes</div>
-    </div>
-  </header>
-
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="queue">Cola de trabajos</button>
-    <button class="tab-btn" data-tab="qr">QR WiFi</button>
-  </div>
-
-  <div class="tab-panel active" id="panel-queue">
-    <div id="activeSection">
-      <div class="empty" id="emptyState">Sin trabajos por el momento</div>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="panel-qr">
-    <div class="qr-panel">
-      <img id="qrImage" src="/api/qr?ssid=PrintFlow&pass=" alt="QR WiFi">
-      <div class="qr-field">
-        <label>SSID</label>
-        <input type="text" id="qrSsid" value="PrintFlow">
-      </div>
-      <div class="qr-field">
-        <label>Contraseña actual</label>
-        <input type="text" id="qrCurrentPass" value="" readonly>
-      </div>
-      <div class="qr-field">
-        <label>Nueva contraseña</label>
-        <input type="text" id="qrNewPass" placeholder="Dejar vacío si es red abierta">
-      </div>
-      <div class="qr-actions">
-        <button class="btn-gen" id="qrGenerate">Generar QR</button>
-      </div>
-    </div>
-  </div>
+  </main>
 </div>
 
 <audio id="notifSound" preload="auto"></audio>
@@ -314,7 +341,7 @@
 })();
 
 (function() {
-  var tabs = document.querySelectorAll(".tab-btn");
+  var tabs = document.querySelectorAll(".nav-item");
   tabs.forEach(function(btn) {
     btn.addEventListener("click", function() {
       tabs.forEach(function(b) { b.classList.remove("active"); });
