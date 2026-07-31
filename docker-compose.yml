@@ -1,12 +1,9 @@
-version: "3.8"
-
 services:
   uprint:
     build: .
     image: rluccadev/uprint:latest
     container_name: uprint
-    ports:
-      - "3000:3000"
+    network_mode: host
     volumes:
       - ./data:/app/data
       - ./uploads:/app/uploads
