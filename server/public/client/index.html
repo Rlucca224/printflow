@@ -169,9 +169,6 @@
 
 <script>
 var selectedFiles = [];
-var clientMac = null;
-
-fetch("/api/mymac").then(function(r){ return r.json(); }).then(function(d){ clientMac = d.mac; }).catch(function(){});
 
 var dropZone = document.getElementById("dropZone");
 var fileInput = document.getElementById("fileInput");
@@ -246,7 +243,6 @@ sendBtn.addEventListener("click", function(){
   selectedFiles.forEach(function(f){ formData.append("files", f); });
   var name = document.getElementById("clientName").value.trim();
   formData.append("name", name || "Cliente");
-  if (clientMac) formData.append("mac", clientMac);
 
   sendBtn.disabled = true;
   var progressWrap = document.getElementById("progressWrap");

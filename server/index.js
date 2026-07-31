@@ -6,7 +6,6 @@ const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const { execSync } = require("child_process");
-const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
@@ -35,25 +34,8 @@ app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard", "index.html"));
 });
 
-app.get("/api/mymac", (req, res) => {
-  const clientIp = (req.ip || "").replace("::ffff:", "");
-  try {
-    const arp = fs.readFileSync("/proc/net/arp", "utf8");
-    const line = arp.split("\n").find(l => l.includes(clientIp));
-    if (line) {
-      const parts = line.trim().split(/\s+/);
-      res.json({ mac: parts[3] });
-    } else {
-      res.json({ mac: null });
-    }
-  } catch (e) {
-    res.json({ mac: null });
-  }
-});
-
 app.post("/upload", upload.array("files", 10), (req, res) => {
   const clientName = req.body.name || "Cliente";
-  const clientMac = req.body.mac || null;
   const jobId = uuidv4().slice(0, 6).toUpperCase();
   const timestamp = new Date().toISOString();
 
@@ -64,19 +46,10 @@ app.post("/upload", upload.array("files", 10), (req, res) => {
     mimetype: f.mimetype
   }));
 
-  const job = { id: jobId, clientName, files, timestamp, status: "pending", clientMac };
+  const job = { id: jobId, clientName, files, timestamp, status: "pending" };
   queue.push(job);
 
   io.emit("new_job", job);
-
-  if (clientMac) {
-    try {
-      execSync("sudo nft add rule inet printflow forward iif wlan0 ether saddr " + clientMac + " drop");
-    } catch (e) {
-      console.log("No se pudo bloquear MAC:", e.message);
-    }
-  }
-
   res.json({ success: true, jobId });
 });
 
@@ -117,7 +90,7 @@ app.get("/api/job/:id/download", (req, res) => {
     const fileArgs = job.files.map(f => uploadsDir + "/" + f.savedName).join(" ");
     execSync("zip -j \"" + zipPath + "\" " + fileArgs);
     res.download(zipPath, zipName, () => {
-      try { fs.unlinkSync(zipPath); } catch (e) {}
+      try { require("fs").unlinkSync(zipPath); } catch (e) {}
     });
   } catch (e) {
     res.status(500).json({ error: "Error al crear ZIP" });
@@ -126,10 +99,6 @@ app.get("/api/job/:id/download", (req, res) => {
 
 app.get("/uploads/:filename", (req, res) => {
   res.sendFile(path.join(__dirname, "uploads", req.params.filename));
-});
-
-app.use((req, res) => {
-  res.redirect("/");
 });
 
 io.on("connection", (socket) => {
