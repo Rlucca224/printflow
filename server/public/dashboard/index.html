@@ -731,6 +731,15 @@
       background: #e0e0e0;
     }
   </style>
+  <script>
+  (function() {
+    var stored = localStorage.getItem("printflow-theme") || "system";
+    var theme = stored === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : stored;
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  </script>
 </head>
 <body>
 <div class="theme-toggle" id="themeToggle">
@@ -845,9 +854,9 @@
   function applyTheme(v) {
     if (v === "system") {
       var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.body.setAttribute("data-theme", dark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
     } else {
-      document.body.setAttribute("data-theme", v);
+      document.documentElement.setAttribute("data-theme", v);
     }
   }
 
