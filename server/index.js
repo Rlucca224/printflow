@@ -16,11 +16,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const configPath = path.join(__dirname, "config.json");
+const dataDir = path.join(__dirname, "data");
+const configPath = path.join(dataDir, "config.json");
 const defaultConfig = { ssid: "uPrint", pass: "" };
 
 function loadConfig() {
   try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
     if (fs.existsSync(configPath)) {
       return { ...defaultConfig, ...JSON.parse(fs.readFileSync(configPath, "utf8")) };
     }
@@ -32,6 +36,9 @@ function loadConfig() {
 
 function saveConfig(config) {
   try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   } catch (e) {
     console.error("Error guardando config.json:", e.message);
@@ -105,7 +112,7 @@ app.get("/api/qr", (req, res) => {
 });
 
 app.post("/api/job/:id/status", (req, res) => {
-  const validStatuses = ["pending", "printing", "done"];
+  const validStatuses = ["pending", "done"];
   const status = req.body.status;
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ success: false, error: "Estado invalido" });

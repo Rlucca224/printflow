@@ -23,7 +23,7 @@ Customer phone                CachyOS (server)              Windows 11 (dashboar
 3. **Upload** → files are sent via POST to the Node.js server with progress indicator
 4. **Job code** → customer receives a 6-character alphanumeric code to tell the employee
 5. **Dashboard** → employee's screen shows new job in real time with sound notification
-6. **Actions** → employee can mark as "printing" or "done"
+6. **Actions** → employee can mark as "done"
 7. **MAC block** → after upload, `nftables` blocks the customer's MAC so they can't keep using the WiFi
 
 ## Network stack
@@ -78,7 +78,7 @@ printflow/
 | `GET` | `/api/mymac` | Detect client MAC via ARP table |
 | `POST` | `/upload` | Upload files (multipart, max 10 files, 50MB each) |
 | `GET` | `/api/queue` | Get full job queue |
-| `POST` | `/api/job/:id/status` | Update job status (`pending` / `printing` / `done`) |
+| `POST` | `/api/job/:id/status` | Update job status (`pending` / `done`) |
 | `POST` | `/api/job/:id/done` | Mark job as done (legacy) |
 | `GET` | `/uploads/:filename` | Serve uploaded file for preview |
 | `*` | `*` | Catch-all → redirect to `/` (captive portal detection) |
@@ -118,7 +118,53 @@ ss -tlnp | grep 3000
 curl -s http://localhost:3000/ | head -3
 ```
 
+## Docker
+
+### Build and run locally
+
+```bash
+# Build image
+docker build -t rluccadev/uprint:latest .
+
+# Run with persistent data and uploads
+mkdir -p data uploads
+docker run -d --name uprint -p 3000:3000 \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/uploads:/app/uploads" \
+  --restart unless-stopped \
+  rluccadev/uprint:latest
+```
+
+### Docker Compose
+
+```bash
+mkdir -p data uploads
+docker compose up -d
+```
+
+### Push to Docker Hub
+
+```bash
+# Login (only once per machine)
+docker login
+
+# Build and push
+docker build -t rluccadev/uprint:latest .
+docker push rluccadev/uprint:latest
+```
+
+### Pull and run on the server
+
+```bash
+mkdir -p uprint && cd uprint
+
+curl -o docker-compose.yml https://raw.githubusercontent.com/Rlucca224/printflow/main/docker-compose.yml
+mkdir -p data uploads
+
+docker compose pull
+docker compose up -d
+```
+
 ## License
 
 MIT
-test
