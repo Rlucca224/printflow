@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const dataDir = path.join(__dirname, "data");
 const configPath = path.join(dataDir, "config.json");
+const queuePath = path.join(dataDir, "queue.json");
 const defaultConfig = { ssid: "uPrint", pass: "" };
 
 function loadConfig() {
@@ -45,8 +46,56 @@ function saveConfig(config) {
   }
 }
 
+function loadQueue() {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    if (fs.existsSync(queuePath)) {
+      const data = JSON.parse(fs.readFileSync(queuePath, "utf8"));
+      if (Array.isArray(data)) return data;
+    }
+  } catch (e) {
+    console.error("Error leyendo queue.json:", e.message);
+  }
+  return [];
+}
+
+function saveQueue() {
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(queuePath, JSON.stringify(queue, null, 2));
+  } catch (e) {
+    console.error("Error guardando queue.json:", e.message);
+  }
+}
+
+function cleanupJobFiles(job) {
+  const uploadsDir = path.join(__dirname, "uploads");
+  for (const f of job.files) {
+    try {
+      fs.unlinkSync(path.join(uploadsDir, f.savedName));
+    } catch (e) {}
+  }
+}
+
+function scheduleCleanup(jobId) {
+  setTimeout(() => {
+    const idx = queue.findIndex(j => j.id === jobId);
+    if (idx !== -1) {
+      const job = queue[idx];
+      cleanupJobFiles(job);
+      queue.splice(idx, 1);
+      saveQueue();
+      io.emit("queue_init", queue);
+    }
+  }, 60 * 60 * 1000); // borrar 1 hora después de marcar done
+}
+
 let config = loadConfig();
-const queue = [];
+const queue = loadQueue();
 
 const ALLOWED_EXTENSIONS = new Set([
   ".pdf", ".jpg", ".jpeg", ".png", ".docx", ".xlsx", ".doc", ".xls", ".txt"
@@ -97,6 +146,7 @@ app.post("/upload", upload.array("files", 10), (req, res) => {
 
   const job = { id: jobId, clientName, files, timestamp, status: "pending" };
   queue.push(job);
+  saveQueue();
 
   io.emit("new_job", job);
   res.json({ success: true, jobId });
@@ -138,15 +188,11 @@ app.post("/api/job/:id/status", (req, res) => {
   const job = queue.find(j => j.id === req.params.id);
   if (job) {
     job.status = status;
-    io.emit("job_updated", job);
-  }
-  res.json({ success: true });
-});
-
-app.post("/api/job/:id/done", (req, res) => {
-  const job = queue.find(j => j.id === req.params.id);
-  if (job) {
-    job.status = "done";
+    if (status === "done") {
+      job.doneAt = new Date().toISOString();
+      scheduleCleanup(job.id);
+    }
+    saveQueue();
     io.emit("job_updated", job);
   }
   res.json({ success: true });
@@ -172,6 +218,8 @@ app.get("/api/job/:id/download", (req, res) => {
 });
 
 app.get("/uploads/:filename", (req, res) => {
+  res.set("Content-Disposition", "attachment");
+  res.set("X-Content-Type-Options", "nosniff");
   res.sendFile(path.join(__dirname, "uploads", path.basename(req.params.filename)));
 });
 
