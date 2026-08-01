@@ -6,7 +6,7 @@ const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const fs = require("fs");
-const { execSync, execFileSync } = require("child_process");
+const { execFileSync } = require("child_process");
 
 const app = express();
 const server = http.createServer(app);
@@ -48,14 +48,32 @@ function saveConfig(config) {
 let config = loadConfig();
 const queue = [];
 
+const ALLOWED_EXTENSIONS = new Set([
+  ".pdf", ".jpg", ".jpeg", ".png", ".docx", ".xlsx", ".doc", ".xls", ".txt"
+]);
+
+function safeExt(originalname) {
+  const ext = path.extname(originalname || "").toLowerCase();
+  return ALLOWED_EXTENSIONS.has(ext) ? ext : null;
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, "uploads")),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, uuidv4() + ext);
+    const ext = safeExt(file.originalname);
+    cb(null, uuidv4() + (ext || ""));
   }
 });
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!safeExt(file.originalname)) {
+      return cb(new Error("Tipo de archivo no permitido: " + file.originalname));
+    }
+    cb(null, true);
+  }
+});
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "client", "index.html"));
@@ -143,10 +161,10 @@ app.get("/api/job/:id/download", (req, res) => {
   const zipPath = path.join("/tmp", zipName);
 
   try {
-    const fileArgs = job.files.map(f => uploadsDir + "/" + f.savedName).join(" ");
-    execSync("zip -j \"" + zipPath + "\" " + fileArgs);
+    const fileArgs = job.files.map(f => path.join(uploadsDir, f.savedName));
+    execFileSync("zip", ["-j", zipPath, ...fileArgs]);
     res.download(zipPath, zipName, () => {
-      try { require("fs").unlinkSync(zipPath); } catch (e) {}
+      try { fs.unlinkSync(zipPath); } catch (e) {}
     });
   } catch (e) {
     res.status(500).json({ error: "Error al crear ZIP" });
@@ -154,12 +172,18 @@ app.get("/api/job/:id/download", (req, res) => {
 });
 
 app.get("/uploads/:filename", (req, res) => {
-  res.sendFile(path.join(__dirname, "uploads", req.params.filename));
+  res.sendFile(path.join(__dirname, "uploads", path.basename(req.params.filename)));
 });
 
 io.on("connection", (socket) => {
   console.log("Dashboard conectado:", socket.id);
   socket.emit("queue_init", queue);
+});
+
+app.use((err, req, res, next) => {
+  console.error("Error en request:", err.message);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ success: false, error: err.message || "Error en la solicitud" });
 });
 
 const PORT = 3000;

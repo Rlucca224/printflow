@@ -1002,11 +1002,12 @@ function buildCard(job) {
   var time = formatTime(job.timestamp);
 
   var filesHtml = job.files.map(function(f) {
+    var fileUrl = "/uploads/" + encodeURIComponent(f.savedName);
     return '<div class="file-row">' +
       '<span class="icon">' + getFileIcon(f.originalName) + '</span>' +
       '<span class="name">' + escapeHtml(f.originalName) + '</span>' +
       '<span class="size">' + formatSize(f.size) + '</span>' +
-      '<a href="/uploads/' + f.savedName + '" target="_blank">Ver / Imprimir</a>' +
+      '<a href="' + escapeHtml(fileUrl) + '" target="_blank">Ver / Imprimir</a>' +
       '</div>';
   }).join("");
 
