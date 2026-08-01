@@ -79,7 +79,6 @@ printflow/
 | `POST` | `/upload` | Upload files (multipart, max 10 files, 50MB each) |
 | `GET` | `/api/queue` | Get full job queue |
 | `POST` | `/api/job/:id/status` | Update job status (`pending` / `done`) |
-| `POST` | `/api/job/:id/done` | Mark job as done (legacy) |
 | `GET` | `/uploads/:filename` | Serve uploaded file for preview |
 | `*` | `*` | Catch-all → redirect to `/` (captive portal detection) |
 
