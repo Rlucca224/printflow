@@ -55,7 +55,7 @@ No internet access for customers — they can only reach uPrint.
 ## Project structure
 
 ```
-printflow/
+uprint/
 ├── server/
 │   ├── index.js           # Express + Socket.io + Multer backend
 │   ├── package.json
@@ -88,7 +88,7 @@ printflow/
 /etc/hostapd/hostapd.conf   # WiFi access point config
 /etc/dnsmasq.conf           # DHCP + DNS hijack
 /etc/nftables.conf          # Firewall rules
-/etc/sudoers.d/printflow    # Passwordless sudo for /usr/sbin/nft
+/etc/sudoers.d/uprint      # Passwordless sudo for /usr/sbin/nft
 ```
 
 ## Dependencies
@@ -110,7 +110,7 @@ printflow/
 ```bash
 cd server
 export PATH="$HOME/.local/share/mise/installs/node/26.4.0/bin:$PATH"
-setsid node index.js >> /tmp/printflow.log 2>&1 &
+setsid node index.js >> /tmp/uprint.log 2>&1 &
 
 # Check if running
 ss -tlnp | grep 3000
@@ -157,7 +157,7 @@ docker push rluccadev/uprint:latest
 ```bash
 mkdir -p uprint && cd uprint
 
-curl -o docker-compose.yml https://raw.githubusercontent.com/Rlucca224/printflow/main/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/Rlucca224/uprint/main/docker-compose.yml
 mkdir -p data uploads
 
 docker compose pull

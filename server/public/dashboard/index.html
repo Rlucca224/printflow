@@ -729,7 +729,7 @@
   </style>
   <script>
   (function() {
-    var stored = localStorage.getItem("printflow-theme") || "system";
+    var stored = localStorage.getItem("uprint-theme") || "system";
     var theme = stored === "system"
       ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
       : stored;
@@ -839,7 +839,7 @@
 (function() {
   var toggle = document.getElementById("themeToggle");
   var buttons = toggle.querySelectorAll(".theme-btn");
-  var stored = localStorage.getItem("printflow-theme") || "system";
+  var stored = localStorage.getItem("uprint-theme") || "system";
 
   function setActive(value) {
     buttons.forEach(function(btn) {
@@ -862,7 +862,7 @@
   buttons.forEach(function(btn) {
     btn.addEventListener("click", function() {
       var value = btn.dataset.themeValue;
-      localStorage.setItem("printflow-theme", value);
+      localStorage.setItem("uprint-theme", value);
       setActive(value);
       applyTheme(value);
     });
